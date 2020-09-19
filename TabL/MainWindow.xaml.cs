@@ -21,22 +21,27 @@ namespace TabL
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
-    public partial class MainWindow : Window
+    public partial class MainWindow
     {
         private int id;
 
-        private Dictionary<string,int> opened_Tabs = new Dictionary<string, int>();
+        // Dictionary to manage tabs information
+        // You can change the type of the value (can be any object you want to save)
+        // You can easily access it through the tab ID
+        private Dictionary<string, int> opened_Tabs = new Dictionary<string, int>();
+        
+
         // All you need to do for a basic use of tabs duplication is modify those two constants
         private const string TAB_CONTROL_NAME = "TabControl";
-        private const string TAB_NAME = "Tab0";
-        
+        private const string TAB_NAME = "Tab_id_";
+
         private string xamlTabControlName = TAB_CONTROL_NAME;
         private string xamlTabName = TAB_NAME;
 
         private TabControl tabControl;
         private string currentTabId;
         private int currentTabIndex;
-        
+
         public MainWindow()
         {
             InitializeComponent();
@@ -45,6 +50,7 @@ namespace TabL
             KeyDown += CloseTab;
             tabControl.SelectionChanged += TabControlSelectionChanged;
         }
+
         private void OpenTab(object sender, KeyEventArgs e)
         {
             // There I'm opening a tab only if the user presses CTRL + T
@@ -56,30 +62,38 @@ namespace TabL
 
         private void CloseTab(object sender, KeyEventArgs e)
         {
-            if (tabControl.Items.Count > 1 && 
+            if (tabControl.Items.Count > 1 &&
                 e.Key == Key.W && (Keyboard.Modifiers & ModifierKeys.Control) == ModifierKeys.Control)
             {
                 RemoveTabAtCurrent();
             }
         }
 
-
         private void TabControlSelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            currentTabIndex = GetCurrentTabIndex();
+            int index = GetCurrentTabIndex();
+            if (index == -1)
+            {
+                if (currentTabIndex > 0)
+                    currentTabIndex -= 1; // -1 to get to the previous index because there is deletion
+            }
+            else
+                currentTabIndex = index;
+            currentTabId = GetCurrentTabId();
         }
+
         /// <summary>
         /// This function copies an existing tab
         /// </summary>
-        /// <param name="id">The id of the tab in order to differenciate it for example, I'm just incrementing a value from 0</param>
+        /// <param name="id">The id of the tab in order to
+        /// differenciate it for example, I'm just incrementing a value from 0</param>
         /// <param name="xamlTabControlName">The name of the TabControl in which you have a tab to duplicate</param>
         /// <param name="xamlTabName">The name of the TabItem (in your xaml file) you want to duplicate</param>
         private void NewTabItem()
         {
             ++id;
             string tabitem = XamlWriter.Save(FindName(xamlTabName));
-            tabitem = tabitem.Replace($"Name=\"{xamlTabName}\"", $"Name=\"{xamlTabName+id}\"");
-            Console.WriteLine(tabitem);
+            tabitem = tabitem.Replace($"Name=\"{xamlTabName}\"", $"Name=\"{xamlTabName + id}\"");
             StringReader stringReader =
                 new StringReader(tabitem.Replace("_id_", id.ToString()));
             XmlReader xmlReader = XmlReader.Create(stringReader);
@@ -87,20 +101,14 @@ namespace TabL
             RegisterName(xamlTabName + id, newtabItem);
             tabControl?.Items.Add(newtabItem);
             tabControl.SelectedIndex = GetTabControl().Items.Count - 1;
-            opened_Tabs.Add(id.ToString(), GetCurrentTabIndex());
-        }
-
-        private void UnregisterTabById(int myId)
-        {
-            // You should unregister the name of the deleted tab
-            UnregisterName(xamlTabName + myId);
+            opened_Tabs.Add(id.ToString(), currentTabIndex); // You can add whatever you want instead of currentTabIndex
+            newtabItem.Header = "Test" + id;
         }
 
         private void RemoveTabAtCurrent()
         {
             ItemCollection list = ((TabControl) FindName(xamlTabControlName)).Items;
-            opened_Tabs.TryGetValue(currentTabId, out int index);
-            list.RemoveAt(index);
+            list.RemoveAt(currentTabIndex);
             // When deleting a tab you can set it to the last for example whith this line
             // tabControl.SelectedIndex = GetTabControl().Items.Count - 1;
         }
@@ -110,16 +118,18 @@ namespace TabL
             // Now that TabControl has been registered you can find it this way
             return (TabControl) FindName(xamlTabControlName);
         }
-        private TabItem GetTabById(int myId)
-        {
-            // Now that Tabs have been registered you can find them this way
-            return (TabItem) FindName(xamlTabName + myId);
-        }
 
         private int GetCurrentTabIndex()
         {
-            return GetTabControl().SelectedIndex;
+            int index = GetTabControl().SelectedIndex;
+            return index;
         }
-        
+
+        private string GetCurrentTabId()
+        {
+            int index = currentTabIndex;
+            TabItem tabItem = GetTabControl().Items[index] as TabItem;
+            return tabItem.Name.Replace(xamlTabName, "");
+        }
     }
 }

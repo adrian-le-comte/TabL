@@ -8,7 +8,7 @@
         Title="MainWindow" Height="450" Width="800">
     <Grid>
         <TabControl Name="TabControl">
-            <TabItem Name="Tab0"></TabItem>
+            <TabItem Name="Tab_id_" Header="Test0"></TabItem>
         </TabControl>
     </Grid>
 </Window>
