@@ -1,7 +1,7 @@
 # TabL
 The sample is ready to use.
 
-When I created my own IDE I struggled a lot in order to duplicate tabs with the WPF framework. I eventually found a solution that uses XmlWriters and XmlReaders.
+When I created my own IDE I struggled a lot in order to create new tabs with the WPF framework. I eventually found a solution that uses XmlWriters and XmlReaders.
 
 TabL is an example of code in order to create new Tabs in a WPF application.
 
